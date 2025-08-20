@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-VERSION="2.0.0"
+VERSION="0.2.0"
 BUILD_DIR="build"
 APP_NAME="notify.app"
 BINARY_NAME="notify"
