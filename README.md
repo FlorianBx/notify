@@ -1,4 +1,4 @@
-# notify
+# Notify
 
 [![Swift](https://github.com/FlorianBx/notify/actions/workflows/swift.yml/badge.svg)](https://github.com/FlorianBx/notify/actions/workflows/swift.yml)
 
