@@ -20,11 +20,27 @@ let package = Package(
             name: "Notify",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ],
+            exclude: [
+                "Extensions/SoundHelper.test.swift",
+                "Extensions/ImageHelper.test.swift", 
+                "CLI/Arguments.test.swift",
+                "CLI/Commands/SendCommand.test.swift"
             ]
         ),
         .testTarget(
             name: "NotifyTests",
-            dependencies: ["Notify"]
+            dependencies: ["Notify"],
+            path: "Sources/Notify",
+            sources: [
+                "Extensions/SoundHelper.test.swift",
+                "Extensions/ImageHelper.test.swift",
+                "CLI/Arguments.test.swift", 
+                "CLI/Commands/SendCommand.test.swift"
+            ],
+            swiftSettings: [
+                .enableExperimentalFeature("StrictConcurrency")
+            ]
         )
     ]
 )

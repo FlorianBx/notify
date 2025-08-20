@@ -42,38 +42,45 @@ make install
 
 ### Basic notification
 ```bash
-notify -message "Hello World!"
+notify --message "Hello World!"
 ```
 
 ### Rich notification
 ```bash
-notify -title "Build Complete" -subtitle "MyApp" -message "The build finished successfully"
+notify --title "Build Complete" --subtitle "MyApp" --message "The build finished successfully"
 ```
 
 ### With sound
 ```bash
-notify -message "Task completed" -sound "Glass"
+notify --message "Task completed" --sound "Glass"
 ```
 
 ### Open URL on click
 ```bash
-notify -message "Check this out!" -open "https://github.com"
+notify --message "Check this out!" --open "https://github.com"
 ```
 
 ### Activate specific app
 ```bash
-notify -message "Ready for review" -activate "com.apple.Safari"
+notify --message "Ready for review" --activate "com.apple.Safari"
 ```
 
 ### List delivered notifications
 ```bash
-notify -list
+notify list
 ```
 
-### Remove notifications
+### Remove all notifications
 ```bash
-notify -remove ALL
+notify remove --all
 ```
+
+### Remove notifications by group
+```bash
+notify remove --group "MyGroup"
+```
+
+> **Note:** For backward compatibility with terminal-notifier, the legacy flag syntax (`notify --list` and `notify --remove GROUP`) is also supported when using the `send` command, but the subcommand syntax shown above is preferred.
 
 ## Development
 

@@ -1,0 +1,76 @@
+version: '3'
+
+vars:
+  VERSION: '2.0.0'
+  BUILD_DIR: 'build'
+  APP_NAME: 'notify.app'
+  BINARY_NAME: 'notify'
+
+tasks:
+  default:
+    desc: Build the project
+    deps: [build]
+
+  help:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - echo "🧹 Cleaning build artifacts..."
+      - rm -rf {{.BUILD_DIR}}
+      - rm -rf .build
+
+  build:
+    desc: Build the app bundle
+    cmds:
+      - echo "🔨 Building {{.BINARY_NAME}} v{{.VERSION}}..."
+      - ./build.sh
+
+  test:
+    desc: Run tests
+    cmds:
+      - echo "🧪 Running tests..."
+      - swift test
+
+  test-parallel:
+    desc: Run tests in parallel
+    cmds:
+      - swift test --parallel
+
+  install:
+    desc: Build and install to /Applications
+    deps: [build]
+    cmds:
+      - echo "📦 Installing {{.APP_NAME}}..."
+      - sudo rm -rf "/Applications/{{.APP_NAME}}"
+      - sudo cp -R "{{.BUILD_DIR}}/{{.APP_NAME}}" "/Applications/"
+      - sudo mkdir -p /usr/local/bin
+      - sudo ln -sf "/Applications/{{.APP_NAME}}/Contents/MacOS/{{.BINARY_NAME}}" "/usr/local/bin/{{.BINARY_NAME}}"
+      - echo "✅ Installation complete!"
+
+  uninstall:
+    desc: Uninstall from /Applications
+    cmds:
+      - echo "🗑️ Uninstalling {{.APP_NAME}}..."
+      - sudo rm -rf "/Applications/{{.APP_NAME}}"
+      - sudo rm -f "/usr/local/bin/{{.BINARY_NAME}}"
+      - echo "✅ Uninstallation complete!"
+
+  release:
+    desc: Clean build and create release archive
+    deps: [clean, build]
+    cmds:
+      - echo "📦 Creating release archive..."
+      - cd {{.BUILD_DIR}} && tar -czf "{{.BINARY_NAME}}-{{.VERSION}}-darwin.tar.gz" "{{.APP_NAME}}"
+      - echo "✅ Release archive created"
+
+  ci:
+    desc: Run full CI pipeline
+    cmds:
+      - task clean
+      - task test
+      - task build
+      - echo "🎉 CI pipeline completed!"
