@@ -6,19 +6,27 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
       matrix:
-        os: [macos-14, macos-latest]
+        os: [macos-14, macos-15]
     
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Swift 6.0
-      uses: swift-actions/setup-swift@v2
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: "16.2"
+    
+    - name: Setup Swift
+      uses: SwiftyLab/setup-swift@latest
       with:
         swift-version: "6.0"
     
@@ -28,8 +36,11 @@ jobs:
         path: |
           .build
           Package.resolved
-        key: ${{ runner.os }}-spm-${{ hashFiles('Package.swift', 'Package.resolved') }}
+          ~/Library/Caches/org.swift.swiftpm
+          ~/Library/org.swift.swiftpm
+        key: ${{ runner.os }}-spm-xcode16-${{ hashFiles('Package.swift', 'Package.resolved') }}
         restore-keys: |
+          ${{ runner.os }}-spm-xcode16-
           ${{ runner.os }}-spm-
 
     - name: Build
@@ -39,14 +50,14 @@ jobs:
       run: swift test -v
 
     - name: Build release binary
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-15'
       run: |
         swift build -c release --arch arm64
         mkdir -p build/release
         cp .build/arm64-apple-macosx/release/notify build/release/
 
     - name: Upload binary artifact
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-15'
       uses: actions/upload-artifact@v4
       with:
         name: notify-arm64-binary

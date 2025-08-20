@@ -1,5 +1,7 @@
 # notify
 
+[![Swift](https://github.com/FlorianBx/notify/actions/workflows/swift.yml/badge.svg)](https://github.com/FlorianBx/notify/actions/workflows/swift.yml)
+
 A modern Swift CLI tool for sending macOS User Notifications from the command line. Inspired by the excellent terminal-notifier project, this Swift 6 implementation maintains compatibility with most commands while leveraging modern macOS frameworks.
 
 ## Features
