@@ -17,6 +17,12 @@ struct RemoveCommand: AsyncParsableCommand {
     func run() async throws {
         let center = UNUserNotificationCenter.current()
         
+        let settings = await center.notificationSettings()
+        guard settings.authorizationStatus == .authorized || 
+              settings.authorizationStatus == .provisional else {
+            throw ValidationError("Notification authorization required to remove notifications")
+        }
+        
         if removeAll {
             center.removeAllDeliveredNotifications()
             center.removeAllPendingNotificationRequests()
