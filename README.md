@@ -57,6 +57,20 @@ notify --title "Build Complete" --subtitle "MyApp" --message "The build finished
 notify --message "Task completed" --sound "Glass"
 ```
 
+#### Available sounds
+
+System sounds available on all macOS systems:
+- `Basso`, `Blow`, `Bottle`, `Frog`, `Funk`, `Glass`, `Hero`, `Morse`, `Ping`, `Pop`, `Purr`, `Sosumi`, `Submarine`, `Tink`
+
+Examples:
+```bash
+notify --message "Build finished!" --sound "Hero"
+notify --message "Error occurred" --sound "Basso" 
+notify --message "New message" --sound "Ping"
+```
+
+> **Note:** Additional sounds may be available depending on your macOS version. All system sounds are located in `/System/Library/Sounds/`.
+
 ### Open URL on click
 ```bash
 notify --message "Check this out!" --open "https://github.com"
