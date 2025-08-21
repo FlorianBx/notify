@@ -57,22 +57,19 @@ struct SoundHelperTests {
         )
     }
     
-    @Test("Create UNNotificationSound for default")
-    func createUNNotificationSoundForDefault() throws {
-        let sound = SoundHelper.createUNNotificationSound(from: "default")
-        #expect(sound != nil, "Devrait créer un son pour 'default'")
+    @Test("Play sound for default")
+    func playSoundForDefault() throws {
+        #expect(!SoundHelper.playSound("default"), "Le son 'default' n'existe pas en tant que fichier système")
     }
     
-    @Test("Create UNNotificationSound for valid sound")
-    func createUNNotificationSoundForValidSound() throws {
-        let sound = SoundHelper.createUNNotificationSound(from: "Glass")
-        #expect(sound != nil, "Devrait créer un son pour 'Glass'")
+    @Test("Play sound for valid sound")
+    func playSoundForValidSound() throws {
+        #expect(SoundHelper.playSound("Glass"), "Devrait pouvoir jouer le son 'Glass'")
     }
     
-    @Test("Create UNNotificationSound for invalid sound")
-    func createUNNotificationSoundForInvalidSound() throws {
-        let sound = SoundHelper.createUNNotificationSound(from: "InvalidSound")
-        #expect(sound == nil, "Ne devrait pas créer de son pour un nom invalide")
+    @Test("Play sound for invalid sound")
+    func playSoundForInvalidSound() throws {
+        #expect(!SoundHelper.playSound("InvalidSound"), "Ne devrait pas pouvoir jouer un son invalide")
     }
     
     @Test("Validate and normalize sound name")

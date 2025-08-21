@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import UserNotifications
 
 @available(macOS 13.0, *)
@@ -52,16 +53,41 @@ public struct SoundHelper: Sendable {
         }
     }
     
-    public static func createUNNotificationSound(from soundName: String) -> UNNotificationSound? {
+    public static func playSound(_ soundName: String) -> Bool {
         if soundName == defaultSound {
-            return .default
+            if let sound = NSSound(named: "default") {
+                sound.play()
+                while sound.isPlaying {
+                    Thread.sleep(forTimeInterval: 0.1)
+                }
+                return true
+            } else {
+                return false
+            }
         }
         
         if isValidSound(soundName) {
-            return UNNotificationSound(named: UNNotificationSoundName("\(soundName).aiff"))
+            if let sound = NSSound(named: soundName) {
+                sound.play()
+                while sound.isPlaying {
+                    Thread.sleep(forTimeInterval: 0.1)
+                }
+                return true
+            } else {
+                let soundPath = "\(systemSoundsDirectory)/\(soundName).aiff"
+                if let sound = NSSound(contentsOfFile: soundPath, byReference: true) {
+                    sound.play()
+                    while sound.isPlaying {
+                        Thread.sleep(forTimeInterval: 0.1)
+                    }
+                    return true
+                } else {
+                    return false
+                }
+            }
         }
         
-        return nil
+        return false
     }
     
     public static func validateAndNormalizeSoundName(_ input: String?) -> Result<String?, SoundError> {

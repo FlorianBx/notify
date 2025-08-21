@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import AppKit
 @preconcurrency import UserNotifications
 
 @available(macOS 13.0, *)
@@ -74,6 +75,15 @@ struct SendCommand: AsyncParsableCommand, NotificationArguments {
             throw ValidationError("No message provided. Use -m/--message or pipe content via stdin.")
         }
         
+        if let sound = sound {
+            switch SoundHelper.validateAndNormalizeSoundName(sound) {
+            case .success(_):
+                break
+            case .failure(let error):
+                throw ValidationError(error.localizedDescription + " " + (error.recoverySuggestion ?? ""))
+            }
+        }
+        
         let content = UNMutableNotificationContent()
         content.body = messageText
         
@@ -83,14 +93,6 @@ struct SendCommand: AsyncParsableCommand, NotificationArguments {
         
         if let subtitle = subtitle {
             content.subtitle = subtitle
-        }
-        
-        if let sound = sound {
-            if sound.lowercased() == "default" {
-                content.sound = .default
-            } else {
-                content.sound = UNNotificationSound(named: UNNotificationSoundName(sound))
-            }
         }
         
         if let group = group {
@@ -137,6 +139,10 @@ struct SendCommand: AsyncParsableCommand, NotificationArguments {
         )
         
         try await center.add(request)
+        
+        if let sound = sound {
+            _ = SoundHelper.playSound(sound)
+        }
     }
     
     private func requestAuthorization(center: UNUserNotificationCenter) async throws {
