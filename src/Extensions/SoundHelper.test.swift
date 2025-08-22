@@ -112,7 +112,6 @@ struct SoundHelperTests {
         case .success:
             Issue.record("Devrait échouer avec un son invalide")
         case .failure(let error):
-            #expect(error is SoundError)
             if case .invalidSound(let soundName) = error {
                 #expect(soundName == "InvalidSound")
             } else {

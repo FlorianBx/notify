@@ -267,11 +267,23 @@ public final class NotificationManager: NSObject {
     }
     
     private func activateApp(_ bundleID: String) {
-        var launchIdentifier: NSNumber? = nil
-        _ = NSWorkspace.shared.launchApplication(withBundleIdentifier: bundleID, 
-                                              options: [], 
-                                              additionalEventParamDescriptor: nil as NSAppleEventDescriptor?,
-                                              launchIdentifier: &launchIdentifier)
+        if #available(macOS 11.0, *) {
+            let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
+            if let appURL = url {
+                let configuration = NSWorkspace.OpenConfiguration()
+                NSWorkspace.shared.openApplication(at: appURL, configuration: configuration) { _, error in
+                    if let error = error {
+                        print("Failed to launch app: \(error.localizedDescription)")
+                    }
+                }
+            }
+        } else {
+            var launchIdentifier: NSNumber? = nil
+            _ = NSWorkspace.shared.launchApplication(withBundleIdentifier: bundleID, 
+                                                  options: [], 
+                                                  additionalEventParamDescriptor: nil as NSAppleEventDescriptor?,
+                                                  launchIdentifier: &launchIdentifier)
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 import Foundation
 
-extension NSMutableData: @unchecked Sendable {}
+extension NSMutableData: @retroactive @unchecked Sendable {}
 
 @available(macOS 13.0, *)
 public actor ShellExecutor {

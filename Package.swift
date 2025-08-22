@@ -26,7 +26,8 @@ let package = Package(
                 "Extensions/SoundHelper.test.swift",
                 "Extensions/ImageHelper.test.swift", 
                 "CLI/Arguments.test.swift",
-                "CLI/Commands/SendCommand.test.swift"
+                "CLI/Commands/SendCommand.test.swift",
+                "Resources/Info.plist"
             ]
         ),
         .testTarget(
