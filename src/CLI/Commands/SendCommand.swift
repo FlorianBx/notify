@@ -53,6 +53,9 @@ struct SendCommand: AsyncParsableCommand, NotificationArguments {
     @Flag(name: [.customLong("list")], help: "List notifications (compatibility)")
     var list = false
     
+    @Flag(name: [.customLong("persist")], help: "Keep the CLI running to handle notification callbacks")
+    var persist = false
+    
     func run() async throws {
         if list {
             let listCommand = ListCommand()
@@ -67,7 +70,9 @@ struct SendCommand: AsyncParsableCommand, NotificationArguments {
             return
         }
         
-        let center = UNUserNotificationCenter.current()
+        let center = await MainActor.run {
+            UNUserNotificationCenter.current()
+        }
         
         try await requestAuthorization(center: center)
         
@@ -131,6 +136,50 @@ struct SendCommand: AsyncParsableCommand, NotificationArguments {
         
         content.userInfo = userInfo
         
+        // Configure notification actions if needed
+        if open != nil || execute != nil || activate != nil {
+            var actions: [UNNotificationAction] = []
+            let categoryIdentifier = "notify-\(UUID().uuidString)"
+            
+            if open != nil {
+                let openAction = UNNotificationAction(
+                    identifier: "open-url",
+                    title: "Open",
+                    options: [.foreground]
+                )
+                actions.append(openAction)
+            }
+            
+            if execute != nil {
+                let executeAction = UNNotificationAction(
+                    identifier: "execute-command",
+                    title: "Execute",
+                    options: []
+                )
+                actions.append(executeAction)
+            }
+            
+            if activate != nil {
+                let activateAction = UNNotificationAction(
+                    identifier: "activate-app",
+                    title: "Activate",
+                    options: [.foreground]
+                )
+                actions.append(activateAction)
+            }
+            
+            if !actions.isEmpty {
+                let category = UNNotificationCategory(
+                    identifier: categoryIdentifier,
+                    actions: actions,
+                    intentIdentifiers: [],
+                    options: []
+                )
+                center.setNotificationCategories([category])
+                content.categoryIdentifier = categoryIdentifier
+            }
+        }
+        
         let identifier = group ?? UUID().uuidString
         let request = UNNotificationRequest(
             identifier: identifier,
@@ -140,17 +189,58 @@ struct SendCommand: AsyncParsableCommand, NotificationArguments {
         
         try await center.add(request)
         
+        // Store context for notification click handling if URL is provided
+        if let open = open {
+            LaunchContextDetector.storeNotificationContext(identifier: identifier, url: open)
+        }
+        
         if let sound = sound {
             _ = SoundHelper.playSound(sound)
         }
+        
+        // Configure notification delegate to enable macOS auto-relaunch on click
+        if open != nil || execute != nil || activate != nil {
+            await MainActor.run {
+                let app = NSApplication.shared
+                let appDelegate = NotificationAppDelegate()
+                let notificationDelegate = NotificationDelegate()
+                
+                app.delegate = appDelegate
+                UNUserNotificationCenter.current().delegate = notificationDelegate
+            }
+            
+            // Give macOS a moment to register our app as the notification handler
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+        
+        // Only start persistent event loop if explicitly requested with --persist
+        if persist {
+            await MainActor.run {
+                let app = NSApplication.shared
+                let delegate = NotificationAppDelegate()
+                delegate.setShouldPersist(persist)
+                app.delegate = delegate
+                app.run()
+            }
+        }
+        
+        // Otherwise, we terminate and let macOS relaunch us if notification is clicked
     }
     
     private func requestAuthorization(center: UNUserNotificationCenter) async throws {
         let options: UNAuthorizationOptions = [.alert, .sound, .badge]
-        let granted = try await center.requestAuthorization(options: options)
         
-        if !granted {
-            throw ValidationError("Notification authorization denied")
+        do {
+            let granted = try await center.requestAuthorization(options: options)
+            
+            if !granted {
+                print("⚠️ Notification authorization denied. Please enable notifications in System Settings > Notifications > notify")
+                throw ValidationError("Notification authorization denied. Please enable notifications in System Settings.")
+            }
+        } catch {
+            print("⚠️ Failed to request notification authorization: \(error.localizedDescription)")
+            print("Please ensure notify has permission to send notifications in System Settings > Notifications")
+            throw error
         }
     }
     
@@ -184,4 +274,5 @@ struct SendCommand: AsyncParsableCommand, NotificationArguments {
             return URL(fileURLWithPath: expandedPath)
         }
     }
+    
 }

@@ -68,6 +68,7 @@ struct SendCommandTests {
         #expect(command.ignoreDnD == false)
         #expect(command.remove == nil)
         #expect(command.list == false)
+        #expect(command.waitForClick == false)
     }
     
     // MARK: - Argument Parsing Tests
@@ -140,6 +141,23 @@ struct SendCommandTests {
         #expect(command.contentImage == "https://example.com/image.jpg")
     }
     
+    @Test("Parse waitForClick flag")
+    func parseWaitForClickFlag() throws {
+        let args = ["--message", "Test", "--waitForClick"]
+        
+        let command = try SendCommand.parse(args)
+        #expect(command.waitForClick == true)
+    }
+    
+    @Test("Parse waitForClick with open URL")
+    func parseWaitForClickWithOpenURL() throws {
+        let args = ["--message", "Test", "--open", "https://example.com", "--waitForClick"]
+        
+        let command = try SendCommand.parse(args)
+        #expect(command.open == "https://example.com")
+        #expect(command.waitForClick == true)
+    }
+    
     // MARK: - Error Handling Tests
     
     @Test("Parse with missing value")
@@ -176,7 +194,8 @@ struct SendCommandTests {
         execute: String? = "echo hello",
         ignoreDnD: Bool = true,
         remove: String? = "test-group",
-        list: Bool = true
+        list: Bool = true,
+        waitForClick: Bool = false
     ) -> SendCommand {
         var command = SendCommand()
         command.message = message
@@ -193,6 +212,7 @@ struct SendCommandTests {
         command.ignoreDnD = ignoreDnD
         command.remove = remove
         command.list = list
+        command.waitForClick = waitForClick
         return command
     }
 }
