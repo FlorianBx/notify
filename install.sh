@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/yourusername/terminal-notifier-swift"
-VERSION="0.2.0"
+VERSION="v0.2.0"
 APP_NAME="terminal-notifier.app"
 BINARY_NAME="terminal-notifier"
 INSTALL_PATH="/Applications/${APP_NAME}"
